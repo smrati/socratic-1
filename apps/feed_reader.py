@@ -19,12 +19,16 @@ async def fetch_all_rss(feeds):
         tasks = [parse_rss(session, url) for url in feeds]
         results = await asyncio.gather(*tasks)
         return results
+
+
 def fetch_feeds():
     st.title('Feed Reader')
     feeds = [
-        'http://feeds.bbci.co.uk/news/rss.xml',
-        'http://rss.cnn.com/rss/edition.rss',
-        'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml'
+        'https://www.bhaskar.com/rss-v1--category-1061.xml',
+        'https://www.firstpost.com/commonfeeds/v1/mfp/rss/india.xml',
+        'https://www.firstpost.com/commonfeeds/v1/mfp/rss/world.xml',
+        'https://www.firstpost.com/commonfeeds/v1/mfp/rss/politics.xml',
+        'https://zeenews.india.com/rss/india-national-news.xml'
     ]
 
     results = asyncio.run(fetch_all_rss(feeds))
@@ -43,10 +47,15 @@ def fetch_feeds():
             feeds.append(
                 {
                     'title': title,
-                    'link': link,
+                    'URL': link,
                     'published': published
                 }
             )
         final_feeds += feeds
-    final_df = pd.DataFrame(final_feeds)
-    st.dataframe(final_df)
+    df = pd.DataFrame(final_feeds)
+
+    # Convert the URL column to clickable links
+    df['URL'] = df['URL'].apply(lambda x: f'<a href="{x}" target="_blank">{x}</a>')
+
+    # Display the DataFrame
+    st.markdown(df.to_html(escape=False), unsafe_allow_html=True)
